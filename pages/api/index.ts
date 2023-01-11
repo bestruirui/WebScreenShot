@@ -1,37 +1,71 @@
-import { launch, Page } from "puppeteer-core";
+import { NextApiRequest, NextApiResponse } from "next";
 import chrome from "chrome-aws-lambda";
-let _page: Page | null;
+import puppeteer from "puppeteer-core";
+import stream from "stream";
 
-async function getPage() {
-    if (_page) return _page;
-    const options = { 
-        args: chrome.args,
-        executablePath: await chrome.executablePath,
-        headless: chrome.headless
-    };
-    const browser = await launch(options);
-    _page = await browser.newPage();
-    return _page;
+interface queryTypes {
+  [key: string]: string | string[] | undefined;
 }
 
-export async function getScreenshot(url, width, height) {
-    const page = await getPage();
-    await page.goto(url);
-    await page.setViewport({ width: Number(width) || 1280, height: Number(height) || 720, deviceScaleFactor: 2 });
-    const file = await page.screenshot();
-    return file;
+interface bodyTypes {
+  [key: string]: string;
 }
 
-module.exports = async (req, res) => {
-  if (!req.query.url) return res.status(400).send("No url query specified.");
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
+const screenshot = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { url, name }: bodyTypes = req.body;
+  const { fullPage, width = "1024", height = "800" }: queryTypes = req.query;
+
   try {
-    const file = await getScreenshot(req.query.url, req.query.width, req.query.height);
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "public, immutable, no-transform, s-maxage=86400, max-age=86400");
-    res.status(200).end(file);
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("The server encountered an error. You may have inputted an invalid query.");
-  }
-}
+    if (!url || !name) {
+      return res.status(400).json({
+        message: "fill all fields",
+      });
+    }
 
+    const validUrl = /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
+
+    if (!validUrl.test(url))
+      return res.status(400).json({ message: "Invalid Url" });
+
+    const fileName = `${name}_${Date.now()}.jpeg`;
+
+    const browser = await puppeteer.launch({
+      args: chrome.args,
+      executablePath: await chrome.executablePath,
+      headless: chrome.headless,
+    });
+
+    let page = await browser.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000});
+    await page.setViewport({
+      width: typeof width === "string" ? parseInt(width) : 1024,
+      height: typeof height === "string" ? parseInt(height) : 800,
+    });
+
+    const img = await page.screenshot({
+      type: "jpeg",
+      fullPage: fullPage === "true",
+      encoding: "binary",
+    });
+
+    const resImg = new stream.PassThrough();
+    resImg.end(img);
+
+    await page.close();
+    await browser.close();
+
+    res.setHeader("content-disposition", "attachment; filename=" + fileName);
+
+    resImg.pipe(res);
+  } catch (err) {
+    res.status(500);
+  }
+};
+
+export default screenshot;

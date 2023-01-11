@@ -37,18 +37,18 @@ const Screenshot = () => {
       Nprogress.start();
       const slugifiedName = stringToSlug(name);
       //https://s.vercel.app/api?url=https://google.com&width=1280&height=720
-      const RUI_POST = axios.get(`/api?url=${url}&${sizeProperty[sizeState]}&fullPage=${fullPage}`);
+      const RUI_POST = axios.post(`https://web-screen-shot-api.vercel.app/api?url=${url}&${sizeProperty[sizeState]}&fullPage=${fullPage}`);
 
       //const { image, fileName } = result.data;
 
-      const flieurl = `/api?url=${url}&${sizeProperty[sizeState]}&fullPage=${fullPage}`;
+      const flieurl = `https://web-screen-shot-api.vercel.app/api?url=${url}&${sizeProperty[sizeState]}&fullPage=${fullPage}`;
 
       const downloadLink = document.createElement('a');
 
       RUI_POST;
 
-      downloadLink.href = `data:image/png,${flieurl}`;
-      downloadLink.download = `${name}`;
+      downloadLink.href = `${flieurl}`;
+      //downloadLink.download = `${name}`;
       downloadLink.click();
 
       setDisabled(false);
