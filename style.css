@@ -112,6 +112,12 @@ input:checked {
   display: flex;
   align-items: center;
 }
+@media only screen and (max-width: 500px)  {
+  .checkbox {
+    margin: 0 auto !important;
+    text-align: center;
+  }
+}
 
 .checkbox > label {
   position: relative;
@@ -235,9 +241,7 @@ footer {
   .title {
     font-size: 2rem;
   }
-  .mockup {
-    width: 100% !important;
-  }
+  
   form {
     width: 90% !important;
   }
@@ -254,4 +258,8 @@ footer {
   form {
     width: 70% !important;
   }
+}
+img.mockup {
+  border-radius: 23px;
+  box-shadow: 0px 0px 1rem rgb(0 0 0 / 30%);
 }
