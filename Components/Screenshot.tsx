@@ -15,6 +15,8 @@ const Screenshot = () => {
   const [fullPage, setFull] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
+  const api=process.env.API_URL;
+
   const sizeProperty = ['1920x1080', '1280x800', '420x740'];
 
   const submit = async (e: FormEvent) => {
@@ -23,7 +25,7 @@ const Screenshot = () => {
       setDisabled(true);
       Nprogress.start();
      
-      const result = await axios.get<response>(`https://screenshot.api.bestrui.top/?url=${url}&viewport=${sizeProperty[sizeState]}&fullPage=${fullPage}&encoding=base64&cache=3600`, {
+      const result = await axios.get<response>(`${api}/?url=${url}&viewport=${sizeProperty[sizeState]}&fullPage=${fullPage}&encoding=base64&cache=3600`, {
         url, 
       });
 
