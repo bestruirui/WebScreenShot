@@ -23,7 +23,7 @@ const Screenshot = () => {
       setDisabled(true);
       Nprogress.start();
      
-      const result = await axios.get<response>(`https://screenshot.api.bestrui.top/?url=${url}&viewport=${sizeProperty[sizeState]}&fullPage=${fullPage}&encoding=base64&cache=3600`, {
+      const result = await axios.get<response>(`https://example.com/?url=${url}&viewport=${sizeProperty[sizeState]}&fullPage=${fullPage}&encoding=base64&cache=3600`, {
         url, 
       });
 
